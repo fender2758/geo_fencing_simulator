@@ -8,11 +8,15 @@ import csv
 import time
 from rdp import rdp
 #ramer-douglas-peucker
+import os
+
+ROOT = os.getcwd()
+
 
 def cities_and_roads(agent_nums = 1000):
     plt.rcParams["figure.figsize"] = (10, 10)
-    
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\suwon_union.csv"
+
+    file = os.path.join(ROOT, "suwon/suwon_union.csv")
     f = open(file, 'r')
     rdr = csv.reader(f)
 
@@ -33,7 +37,7 @@ def cities_and_roads(agent_nums = 1000):
     suwon_union = Polygon(suwon_poly)
 
     
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\roads"
+    file = os.path.join(ROOT, "roads")
 
     roads = gpd.read_file(file)
     roads = roads.to_crs(epsg=4326)
