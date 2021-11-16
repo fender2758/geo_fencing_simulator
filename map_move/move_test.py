@@ -18,9 +18,13 @@ from rdp import rdp
 import math
 
 def move_road(roads, road_num, N, up_down):
-    print(N)
+    print(road_num)
     if N == 0:
-        return
+        return []
+
+    line = [roads["geometry"][road_num]]
+
+    
     X, Y = roads["geometry"][road_num].xy
 
     if not up_down:
@@ -39,7 +43,6 @@ def move_road(roads, road_num, N, up_down):
         print("X1", X[i+1], Y[i+1])
         print("Angle", angle)
         """
-        
         pos_x = X[i]+math.cos(angle) * left
         pos_y = Y[i]+math.cos(angle) * left
         past = abs(X[i+1]-X[i])/(X[i+1]-X[i])
@@ -49,28 +52,48 @@ def move_road(roads, road_num, N, up_down):
             #print(pos_x, pos_y, X[i+1]-pos_x)
         left = math.sqrt((X[i+1]-pos_x)**2 + (Y[i+1]-pos_y)**2)
 
-
     if up_down:
-        print("from", roads["UP_FROM_NO"][road_num])
+        print("from", roads["UP_FROM_NO"][road_num], end = "")
         print("to", roads["UP_TO_NODE"][road_num])
-        print(roads["UP_FROM_NO"][roads["UP_FROM_NO"] == roads["UP_TO_NODE"][road_num]])
-        if roads["UP_FROM_NO"][roads["UP_FROM_NO"] == roads["UP_TO_NODE"][road_num]].empty:
-            move_road(roads, road_num, N-1, not up_down)
-        else:
-            move_road(roads, roads["UP_FROM_NO"][roads["UP_FROM_NO"] == roads["UP_TO_NODE"][road_num]].index[0], N-1, up_down)
-    elif not up_down:
-        print("from", roads["DOWN_FROM_"][road_num])
+        start_n = roads["UP_FROM_NO"][road_num]
+        end_n = roads["UP_TO_NODE"][road_num]
+    else:
+        print("from", roads["DOWN_FROM_"][road_num], end = "")
         print("to", roads["DOWN_TO_NO"][road_num])
-        print(roads["DOWN_FROM_"][roads["DOWN_FROM_"] == roads["DOWN_TO_NO"][road_num]])
-        if roads["DOWN_FROM_"][roads["DOWN_FROM_"] == roads["DOWN_TO_NO"][road_num]].empty:
-            move_road(roads, road_num, N-1, not up_down)
-        else:
-            move_road(roads, roads["DOWN_FROM_"][roads["DOWN_FROM_"] == roads["DOWN_TO_NO"][road_num]].index[0], N-1, up_down)
+        start_n = roads["DOWN_FROM_"][road_num]
+        end_n = roads["DOWN_TO_NO"][road_num]
 
+    up_ser = roads["UP_FROM_NO"][roads["UP_FROM_NO"] == end_n]
+    down_ser = roads["DOWN_FROM_"][roads["DOWN_FROM_"] == end_n]
+    try:
+        del up_ser[road_num]
+    except:
+        a = 1
+    try:
+        del down_ser[road_num]
+    except:
+        a = 1
+            
+    
+    if not up_ser.empty:
+        line.extend(move_road(roads, up_ser.index[0], N-1, True))
+    
+    if not down_ser.empty:
+        line.extend(move_road(roads, down_ser.index[0], N-1, False))
+        
+    else:
+        print("GO BACK")
+        if up_down:
+            line.extend(move_road(roads, road_num, N-1, not up_down))
+        else:
+            line.extend(move_road(roads, road_num, N-1, not up_down))
+
+            
+    return line
 def cities_and_roads():
     plt.rcParams["figure.figsize"] = (10, 10)
     
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\suwon_union.csv"
+    file = "../suwon\\suwon_union.csv"
     f = open(file, 'r')
     rdr = csv.reader(f)
 
@@ -91,12 +114,24 @@ def cities_and_roads():
     suwon_union = Polygon(suwon_poly)
 
     
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\roads"
+    file = "../roads"
 
     roads = gpd.read_file(file)
     roads = roads.to_crs(epsg=4326)
     
-    move_road(roads, 3, 10, True)
+    line = move_road(roads, 0, 5, True)
+
+        
+    print(line)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_aspect('equal')
+    for l in line:
+        X, Y = l.xy
+        ax.plot(X, Y)
+    plt.show()
+    
 
 if __name__ == "__main__":
     cities_and_roads()
