@@ -16,6 +16,12 @@ import time
 
 from rdp import rdp
 import math
+import os
+
+from pathlib import Path
+
+ROOT = os.getcwd()
+ROOT = Path(__file__).parents[1]
 
 def move_road(roads, road_num, N, up_down):
     #도로 정보, 현재 도로 인덱스, 남은 도로 개수, 위/아래 이동 여부
@@ -98,7 +104,7 @@ def suwon_move():
     plt.rcParams["figure.figsize"] = (10, 10)
 
     #수원 외곽
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\suwon_union.csv"
+    file = os.path.join(ROOT, "suwon\suwon_union.csv")
     f = open(file, 'r')
     rdr = csv.reader(f)
 
@@ -113,7 +119,7 @@ def suwon_move():
     suwon_union = Polygon(suwon_poly)
 
     #수원 도로
-    file = "C:\\Users\\hyonj\\OneDrive - 중앙대학교\\CAU\\랩\\mapview\\roads"
+    file = os.path.join(ROOT, "roads")
 
     roads = gpd.read_file(file)
     roads = roads.to_crs(epsg=4326)
